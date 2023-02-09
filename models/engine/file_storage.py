@@ -39,12 +39,28 @@ class FileStorage:
         """
         deserializes the JSON file to __objects (only if the JSON file
         (__file_path)
-        exists ; otherwise, do nothing. If the file doesn’t exist
+        exists ; otherwise, do nothing. If the file does not exist
         , no exception should be raised)
         """
-        try:
-            with open(self.__file_path, encoding="utf-8") as f:
-                for obj in json.load(f).values():
-                    self.new(eval(obj["__class__"])(**obj))
-        except FileNotFoundError:
+        if not os.path.isfile(FileStorage.__file_path):
             return
+        with open(FileStorage.__file_path, "r", encoding="utf-8") as f:
+            obj_dict = json.load(f)
+            obj_dict = {k: self.classes()[v["__class__"]](**v)
+                        for k, v in obj_dict.items()}
+            # TODO: should this overwrite or insert?
+            FileStorage.__objects = obj_dict
+
+    def attributes(self):
+        """
+        Returns the attributes and their types of class names
+        """
+        attributes = {
+                "User":
+                {
+                    "email": str,
+                    "password": str,
+                    "first_name": str,
+                    "last_name": str
+                },
+        }
