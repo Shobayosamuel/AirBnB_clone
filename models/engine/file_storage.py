@@ -1,47 +1,52 @@
 #!/usr/bin/python3
-"""Define a class FileStorage"""
+"""Module for FileStorage class."""
+import datetime
 import json
 import os
 
 
 class FileStorage:
-    """The class serializes and deserializes JSON files"""
 
-    def __init__(self):
-        """initialize the base class"""
-        __file_path = "file.json"
-        __objects = {}
+    """Class for storing and retrieving data"""
+    __file_path = "file.json"
+    __objects = {}
 
     def all(self):
-        """
-        Return the dictionary __object
-        """
-        return (self.__objects)
+        """returns the dictionary __objects"""
+        return FileStorage.__objects
 
     def new(self, obj):
-        """
-        sets in __objects the obj with key <obj class name>.id
-        """
+        """sets in __objects the obj with key <obj class name>.id"""
         key = "{}.{}".format(type(obj).__name__, obj.id)
         FileStorage.__objects[key] = obj
 
     def save(self):
-        """
-        serializes __objects to json file
-        """
-        with open(FileStorage.__file_path, "w", encoding="utf-8") as fil:
-            d_store = {}
-            for k, v in self.__objects.items():
-                d_store[k] = v.to_dict()
-            json.dumps(d_store, fil)
+        """ serializes __objects to the JSON file (path: __file_path)"""
+        with open(FileStorage.__file_path, "w", encoding="utf-8") as f:
+            d = {k: v.to_dict() for k, v in FileStorage.__objects.items()}
+            json.dump(d, f)
+
+    def classes(self):
+        """Returns a dictionary of valid classes and their references"""
+        from models.base_model import BaseModel
+        from models.user import User
+        from models.state import State
+        from models.city import City
+        from models.amenity import Amenity
+        from models.place import Place
+        from models.review import Review
+
+        classes = {"BaseModel": BaseModel,
+                   "User": User,
+                   "State": State,
+                   "City": City,
+                   "Amenity": Amenity,
+                   "Place": Place,
+                   "Review": Review}
+        return classes
 
     def reload(self):
-        """
-        deserializes the JSON file to __objects (only if the JSON file
-        (__file_path)
-        exists ; otherwise, do nothing. If the file does not exist
-        , no exception should be raised)
-        """
+        """Reloads the stored objects"""
         if not os.path.isfile(FileStorage.__file_path):
             return
         with open(FileStorage.__file_path, "r", encoding="utf-8") as f:
@@ -52,15 +57,39 @@ class FileStorage:
             FileStorage.__objects = obj_dict
 
     def attributes(self):
-        """
-        Returns the attributes and their types of class names
-        """
+        """Returns the valid attributes and their types for classname"""
         attributes = {
-                "User":
-                {
-                    "email": str,
-                    "password": str,
-                    "first_name": str,
-                    "last_name": str
-                },
+            "BaseModel":
+                     {"id": str,
+                      "created_at": datetime.datetime,
+                      "updated_at": datetime.datetime},
+            "User":
+                     {"email": str,
+                      "password": str,
+                      "first_name": str,
+                      "last_name": str},
+            "State":
+                     {"name": str},
+            "City":
+                     {"state_id": str,
+                      "name": str},
+            "Amenity":
+                     {"name": str},
+            "Place":
+                     {"city_id": str,
+                      "user_id": str,
+                      "name": str,
+                      "description": str,
+                      "number_rooms": int,
+                      "number_bathrooms": int,
+                      "max_guest": int,
+                      "price_by_night": int,
+                      "latitude": float,
+                      "longitude": float,
+                      "amenity_ids": list},
+            "Review":
+            {"place_id": str,
+                         "user_id": str,
+                         "text": str}
         }
+        return attributes
